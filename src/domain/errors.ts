@@ -13,6 +13,10 @@ export class InvalidPercentageError extends DomainError {}
 
 export class InvalidVehicleCountError extends DomainError {}
 
+export class InvalidSeedError extends DomainError {}
+
+export class InvalidVehicleIdError extends DomainError {}
+
 export class DuplicateVehicleError extends DomainError {
   constructor(readonly vehicleId: string) {
     super(`Duplicate vehicle id: ${vehicleId}`);
