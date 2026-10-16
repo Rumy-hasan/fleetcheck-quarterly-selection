@@ -51,3 +51,32 @@ Add a new entry when a rule changes; mark the old one as superseded instead of d
 - **Rejected:** Ceil (always at least the share, but inspects more vehicles than asked, e.g. 21 at 25% → 6).
   Round down (can inspect fewer than the share).
 - **Supersedes:** CLAUDE.md decision 3 (ceil on basis points).
+
+## D6. The HMAC key is the seed's hex string
+
+- **Date:** 2026-10-17
+- **Decision:** `score = createHmac("sha256", seed).update(vehicleId).digest("hex")`, where `seed` is the
+  64-character hex string as stored, used as UTF-8 key bytes. The vehicle id is hashed as UTF-8.
+- **Why:** An auditor can reproduce any score with one `node -e` line, copying the stored seed as is.
+  Security is the same: the key still carries the 256 random bits.
+- **Rejected:** Decoding the hex to 32 raw bytes (`Buffer.from(seed, "hex")`): one more step an auditor can
+  get wrong, with no security gain.
+
+## D7. Reject malformed seeds and empty vehicle ids
+
+- **Date:** 2026-10-17
+- **Decision:** The seed must be exactly 64 lowercase hex characters (`InvalidSeedError`). A vehicle id must
+  not be empty or whitespace only (`InvalidVehicleIdError`).
+- **Why:** An empty or short seed makes the picks predictable. One canonical seed form avoids an auditor
+  using `"ABC…"` where `"abc…"` was stored, which would give different picks. An empty id is a data error.
+- **Rejected:** Non-empty seed only (accepts weak seeds such as `"a"`).
+
+## D8. Full sort instead of a heap or quickselect
+
+- **Date:** 2026-10-17
+- **Decision:** Hash every vehicle once, sort all scores, take the first `k`: O(n log n) time, O(n) space.
+- **Why:** Any fair selection must look at every vehicle, so Ω(n) is the floor. Hashing dominates: on an
+  Apple M2 with 200,000 vehicles, hashing took about 250-310 ms and sorting about 90-120 ms (throwaway
+  benchmark, 3 runs). A full sort is short, obviously correct and easy to change live.
+- **Rejected:** Bounded max-heap, O(n log k): no real gain, because `k` can be as large as `n`. Quickselect,
+  O(n) on average: saves at most about 0.1 s, but in-place partitioning is easy to get subtly wrong.

@@ -19,7 +19,8 @@ and one edge case the brief does not mention.
 ## Design decisions (already made, do not change without asking)
 
 1. **Seeded ranking, not `Math.random()`.** For each vehicle compute
-   `score = HMAC-SHA256(key = seed, message = vehicleId)` as lowercase hex.
+   `score = HMAC-SHA256(key = seed, message = vehicleId)` as lowercase hex. The key is the seed's 64-char
+   lowercase hex string itself (not decoded bytes); malformed seeds and empty vehicle ids are rejected.
    Picked = the `k` vehicles with the smallest score. Ties (practically impossible) break by `vehicleId` ascending.
    Compare strings with `<` / `>` (code-unit order), never `localeCompare`.
 2. **Fixed count `k`, not "each vehicle with probability p".** Every k-subset is equally likely, so every
