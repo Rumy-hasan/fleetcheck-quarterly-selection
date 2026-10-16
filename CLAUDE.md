@@ -24,10 +24,11 @@ and one edge case the brief does not mention.
    Compare strings with `<` / `>` (code-unit order), never `localeCompare`.
 2. **Fixed count `k`, not "each vehicle with probability p".** Every k-subset is equally likely, so every
    vehicle has the same chance, and the count is exactly what an auditor expects.
-3. **Rounding:** `k = ceil(n * bp / 10000)` with integer arithmetic, where `bp = round(percentage * 100)`
-   (basis points). Avoids floating-point errors. `n > 0` and `percentage > 0` therefore always picks at least one.
-   Examples: 20 vehicles at 25% → 5; 3 vehicles at 25% → 1; 21 at 25% → 6.
-4. **Percentage validation:** finite number, `0 <= p <= 100`, at most 2 decimal places. Otherwise throw a domain error.
+3. **Rounding:** `k = max(1, round-half-up(n * p / 100))`, computed as `floor((n * p + 50) / 100)` in integers.
+   Always at least one pick and never more than `n`.
+   Examples: 20 at 25% → 5; 21 at 25% → 5; 22 at 25% → 6; 5 at 10% → 1; 4 at 1% → 1.
+4. **Input limits:** percentage is an integer 1-100; the vehicle count is an integer 4-200,000.
+   Anything else throws a domain error (`InvalidPercentageError`, `InvalidVehicleCountError`).
 5. **Input order must not matter.** Sorting by score makes the result independent of how the caller ordered the list.
    Duplicate vehicle ids in the input are rejected with a domain error (do not silently dedupe).
 6. **Seed is created once, at draw time, from a secure random source, and stored with the run.**
@@ -38,11 +39,15 @@ and one edge case the brief does not mention.
 8. **Concurrent calls are safe.** The repository exposes an atomic `saveIfAbsent`. The Postgres equivalent is
    `INSERT ... ON CONFLICT (tenant_id, year, quarter) DO NOTHING` followed by a `SELECT`.
 9. **No exclusion of last quarter's picks.** The brief says they stay eligible. Do not add history-based logic.
-10. **Empty vehicle list or 0%** is valid: store a run with zero picks (audit trail, and the quarter is not re-drawn).
+10. **Invalid input stores nothing.** An empty or too small fleet, or 0%, is rejected before any run is stored.
 11. **`algorithmVersion`** is stored with every run (`"hmac-sha256-lowest-k/v1"`) so old runs stay reproducible
     if the algorithm ever changes.
 12. **Auditor reproduction** is a pure function: `verifyRun(run)` re-computes the picks from
     `eligibleVehicleIds + percentage + seed + algorithmVersion` and compares to `pickedVehicleIds`.
+13. **Quarter window:** from Q1 of `currentYear - 19` up to the current quarter, judged in UTC. Future quarters
+    are rejected. The current time is passed in as a `Date`; the domain never reads the clock.
+
+The reasoning and history behind each decision is in `docs/decisions.md`. Add an entry there when a rule changes.
 
 ## Architecture (DDD-lite, ports and adapters)
 
@@ -50,7 +55,8 @@ and one edge case the brief does not mention.
 src/
   domain/            pure TypeScript, no I/O, no imports from other layers
     quarter.ts            value object (year, quarter 1-4), validation
-    percentage.ts         value object (basis points), validation, k calculation
+    percentage.ts         value object (integer 1-100), validation
+    pick-count.ts         vehicle count limits and rounding to k
     select-vehicles.ts    pure function: the algorithm (decisions 1-5)
     selection-run.ts      entity: the stored result of one draw (+ verifyRun)
     errors.ts             DomainError subclasses
