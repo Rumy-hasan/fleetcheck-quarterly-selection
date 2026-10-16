@@ -96,7 +96,7 @@ Dependency rule: `domain` imports nothing from the other folders; `application` 
   generated files such as `package-lock.json`. A single file over the limit gets a commit of its own.
   Before committing, propose the commit list (message + files + line count) to the author.
 - One PR per task in `TASKS.md`, squash-merged. Use `.github/pull_request_template.md`.
-- Keep Claude Code's `Co-Authored-By` trailer on commits made with its help. It is the honest AI record.
+- AI assistance is recorded in the PR description, not in commit trailers. Commit messages describe only the change.
 - CI (`.github/workflows/ci.yml`) on every PR and on push to `main`: `npm ci`, lint, format check, typecheck,
   tests with coverage, build. No deploy step: this is a library, so a release is a Git tag. Say so in the README.
 
