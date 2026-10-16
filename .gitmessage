@@ -1,0 +1,17 @@
+
+
+# <type>: <what this commit does, imperative, max 72 chars, no period>
+#
+# - <what changed, and why if it is not obvious>
+# - <optional second point>
+# - <optional third point>
+#
+# Co-Authored-By: <only when an AI tool helped>
+#
+# Rules
+# - type: feat | fix | test | docs | chore
+# - Title says what the commit does to the code: "add", "reject", "store",
+#   not "added" or "adding". Read it as "This commit will <title>".
+# - 1 to 3 bullets, one line each, wrapped at 72 chars. Say why, not how.
+# - At most 150 changed lines per commit, excluding package-lock.json.
+# Lines starting with # are ignored.
