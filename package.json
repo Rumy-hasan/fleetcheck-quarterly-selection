@@ -1,0 +1,30 @@
+{
+  "name": "fleetcheck-quarterly-selection",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reproducible, idempotent quarterly random vehicle selection for FleetCheck",
+  "type": "module",
+  "engines": {
+    "node": "^24.22.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "demo": "tsx src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@vitest/coverage-v8": "5.0.5",
+    "eslint": "10.12.0",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vitest": "5.0.5"
+  }
+}
