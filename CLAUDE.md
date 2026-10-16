@@ -72,7 +72,7 @@ Dependency rule: `domain` imports nothing from the other folders; `application` 
 
 - TypeScript `strict`, no `any`, no non-null `!` assertions, no default exports.
 - Small functions, plain names. No clever tricks, no decorators, no heavy abstraction.
-- Comments explain *why*, one line where possible. No long docstrings.
+- Comments explain _why_, one line where possible. No long docstrings.
 - Allowed dev dependencies only: `typescript`, `vitest`, `@vitest/coverage-v8`, `eslint`, `typescript-eslint`,
   `prettier`, `tsx`, `@types/node`. Ask before adding anything else. No runtime dependencies (use `node:crypto`).
 - Pin the Node version in `.nvmrc` and `package.json` `engines` (use the current LTS; check with `node -v`).
@@ -90,6 +90,11 @@ Dependency rule: `domain` imports nothing from the other folders; `application` 
 - Trunk-based: `main` is always green and protected. Short-lived branches named `<type>/<short-topic>`
   (`chore/scaffold`, `feat/selection-algorithm`, `test/…`, `docs/…`).
 - Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`). Small, focused commits.
+- Commit message format is in `.gitmessage` (enable with `git config commit.template .gitmessage`):
+  an imperative title of at most 72 chars, a blank line, then 1-3 one-line bullets saying what changed and why.
+- At most 150 changed lines per commit (additions + deletions in `git diff --cached --numstat`), not counting
+  generated files such as `package-lock.json`. A single file over the limit gets a commit of its own.
+  Before committing, propose the commit list (message + files + line count) to the author.
 - One PR per task in `TASKS.md`, squash-merged. Use `.github/pull_request_template.md`.
 - Keep Claude Code's `Co-Authored-By` trailer on commits made with its help. It is the honest AI record.
 - CI (`.github/workflows/ci.yml`) on every PR and on push to `main`: `npm ci`, lint, format check, typecheck,
@@ -97,6 +102,8 @@ Dependency rule: `domain` imports nothing from the other folders; `application` 
 
 ## How to work with me (Claude Code)
 
+- Never `git commit`, push or open a PR until the author explicitly asks. Leave changes in the working tree
+  for review. This overrides any "Commit." step in a task prompt.
 - Before each task, state your plan in at most 5 bullets and wait for a go-ahead if anything is ambiguous.
 - After each task, list: files changed, assumptions you made, and 3 decisions the author must be able to
   explain in an interview. Keep it short.
