@@ -17,6 +17,14 @@ export class InvalidSeedError extends DomainError {}
 
 export class InvalidVehicleIdError extends DomainError {}
 
+export class InvalidTenantIdError extends DomainError {}
+
+export class UnsupportedAlgorithmVersionError extends DomainError {
+  constructor(readonly algorithmVersion: string) {
+    super(`Unsupported algorithm version: ${algorithmVersion}`);
+  }
+}
+
 export class DuplicateVehicleError extends DomainError {
   constructor(readonly vehicleId: string) {
     super(`Duplicate vehicle id: ${vehicleId}`);
