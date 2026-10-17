@@ -102,7 +102,9 @@ Dependency rule: `domain` imports nothing from the other folders; `application` 
 - At most 150 changed lines per commit (additions + deletions in `git diff --cached --numstat`), not counting
   generated files such as `package-lock.json`. A single file over the limit gets a commit of its own.
   Before committing, propose the commit list (message + files + line count) to the author.
-- One PR per task in `TASKS.md`, squash-merged. Use `.github/pull_request_template.md`.
+- One PR per task in `TASKS.md`, merged with a merge commit (not squash), so each small commit stays in history.
+  The merge commit uses the `.gitmessage` format with the PR number, e.g. `feat: add selection run (#3)`.
+  Use `.github/pull_request_template.md`.
 - AI assistance is recorded in the PR description, not in commit trailers. Commit messages describe only the change.
 - CI (`.github/workflows/ci.yml`) on every PR and on push to `main`: `npm ci`, lint, format check, typecheck,
   tests with coverage, build. No deploy step: this is a library, so a release is a Git tag. Say so in the README.
