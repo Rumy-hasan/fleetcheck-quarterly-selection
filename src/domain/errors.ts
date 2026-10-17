@@ -19,6 +19,10 @@ export class InvalidVehicleIdError extends DomainError {}
 
 export class InvalidTenantIdError extends DomainError {}
 
+export class QuarterNotOpenForDrawError extends DomainError {}
+
+export class SelectionRunNotFoundError extends DomainError {}
+
 export class UnsupportedAlgorithmVersionError extends DomainError {
   constructor(readonly algorithmVersion: string) {
     super(`Unsupported algorithm version: ${algorithmVersion}`);

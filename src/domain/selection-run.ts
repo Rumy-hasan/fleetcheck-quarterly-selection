@@ -24,11 +24,16 @@ export interface CreateSelectionRunInput {
   createdAt: Date;
 }
 
-// Seed and createdAt come from the caller, so this stays pure and testable.
-export function createSelectionRun(input: CreateSelectionRunInput): SelectionRun {
-  if (input.tenantId.trim() === "") {
+// Exported so use cases can reject a blank tenant before touching the repository.
+export function assertValidTenantId(tenantId: string): void {
+  if (tenantId.trim() === "") {
     throw new InvalidTenantIdError("tenant id must not be empty");
   }
+}
+
+// Seed and createdAt come from the caller, so this stays pure and testable.
+export function createSelectionRun(input: CreateSelectionRunInput): SelectionRun {
+  assertValidTenantId(input.tenantId);
   const pickedVehicleIds = selectVehicles({
     vehicleIds: input.eligibleVehicleIds,
     percentage: input.percentage,

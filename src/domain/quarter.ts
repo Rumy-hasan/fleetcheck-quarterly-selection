@@ -21,8 +21,7 @@ export class Quarter {
       );
     }
 
-    const currentYear = now.getUTCFullYear();
-    const currentQuarter = Math.floor(now.getUTCMonth() / 3) + 1;
+    const { currentYear, currentQuarter } = currentOf(now);
     const firstYear = Math.max(1, currentYear - RETENTION_YEARS + 1);
 
     if (year < firstYear) {
@@ -38,6 +37,23 @@ export class Quarter {
     }
     return new Quarter(year, quarter);
   }
+
+  // Only the current quarter may be drawn; past quarters are read-only (docs/decisions.md D12).
+  isCurrent(now: Date): boolean {
+    const { currentYear, currentQuarter } = currentOf(now);
+    return this.year === currentYear && this.quarter === currentQuarter;
+  }
+
+  toString(): string {
+    return label(this.year, this.quarter);
+  }
+}
+
+function currentOf(now: Date): { currentYear: number; currentQuarter: number } {
+  return {
+    currentYear: now.getUTCFullYear(),
+    currentQuarter: Math.floor(now.getUTCMonth() / 3) + 1,
+  };
 }
 
 function label(year: number, quarter: number): string {
