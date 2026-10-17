@@ -36,7 +36,9 @@ and one edge case the brief does not mention.
    Never derive it from public values such as tenant + year + quarter (a company could predict its picks).
 7. **Idempotency comes from the stored run, not from re-running the algorithm.**
    A second call for the same `(tenantId, year, quarter)` returns the stored run unchanged, even if the vehicle
-   list or percentage passed in differs. Result carries `reused: true`.
+   list or percentage passed in differs. Result carries `reused: true`. Only the current quarter can be drawn;
+   a past quarter without a run throws `QuarterNotOpenForDrawError`. Auditing uses the separate, read-only
+   `AuditQuarterlySelection`, which never draws.
 8. **Concurrent calls are safe.** The repository exposes an atomic `saveIfAbsent`. The Postgres equivalent is
    `INSERT ... ON CONFLICT (tenant_id, year, quarter) DO NOTHING` followed by a `SELECT`.
 9. **No exclusion of last quarter's picks.** The brief says they stay eligible. Do not add history-based logic.
@@ -63,7 +65,8 @@ src/
     errors.ts             DomainError subclasses
   application/
     ports.ts              SelectionRunRepository (interface), SeedGenerator and Clock (function types)
-    run-quarterly-selection.ts   use case (decisions 6-8, 10)
+    run-quarterly-selection.ts   use case: draw or reuse (decisions 6-8, 10)
+    audit-quarterly-selection.ts use case: read-only lookup + verifyRun
   infrastructure/
     in-memory-selection-run-repository.ts
     crypto-seed-generator.ts     crypto.randomBytes(32).toString("hex")

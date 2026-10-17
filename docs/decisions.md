@@ -106,3 +106,33 @@ Add a new entry when a rule changes; mark the old one as superseded instead of d
 - **Why:** `(tenantId, year, quarter)` is the idempotency key; a blank tenant would make it meaningless.
   Same rule as vehicle ids (D7).
 - **Rejected:** Accepting any string.
+
+## D11. Which inputs are validated on a rerun
+
+- **Date:** 2026-10-17
+- **Decision:** Tenant id, quarter and percentage are validated on every call. The vehicle list is validated
+  only when a new run is actually drawn.
+- **Why:** The first three are cheap, and a bad value is a caller bug that should surface even on a rerun.
+  On a rerun the vehicle list is ignored (the stored run wins), so it should not decide the outcome, and
+  skipping it saves an O(n) check.
+- **Rejected:** Validating everything on every call (a rerun after the fleet shrank below 4 vehicles would
+  throw instead of returning the stored run).
+
+## D12. Only the current quarter can be drawn
+
+- **Date:** 2026-10-17
+- **Decision:** `RunQuarterlySelection` draws a new run only for the current quarter (UTC). For a past
+  quarter it returns the stored run if one exists, otherwise it throws `QuarterNotOpenForDrawError`.
+- **Why:** A draw made after the quarter ended is not a surprise inspection, and it could be repeated until
+  the result looks convenient. A missed quarter stays missed and visible.
+- **Rejected:** Drawing any quarter inside the retention window (late draws would only be visible through
+  `createdAt`).
+
+## D13. Auditing is a separate, read-only use case
+
+- **Date:** 2026-10-17
+- **Decision:** `AuditQuarterlySelection.execute({ tenantId, year, quarter })` looks up the stored run and
+  returns `{ run, verified }`, or throws `SelectionRunNotFoundError`. It never draws.
+- **Why:** An auditor checking a past quarter must not create the evidence they are checking. Going through
+  the draw use case would have created a run whenever none existed.
+- **Rejected:** Auditing through `RunQuarterlySelection` (side effects on a read).
