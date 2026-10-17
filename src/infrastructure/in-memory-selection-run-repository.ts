@@ -27,7 +27,7 @@ export class InMemorySelectionRunRepository implements SelectionRunRepository {
   }
 }
 
-// JSON keeps the parts separate, so a tenant id containing "|" or ":" cannot collide with another key.
+// JSON gives an unambiguous key for any tenant id, without reasoning about separator characters.
 function key(tenantId: string, quarter: Quarter): string {
   return JSON.stringify([tenantId, quarter.year, quarter.quarter]);
 }
