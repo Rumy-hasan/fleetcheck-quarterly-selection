@@ -80,3 +80,29 @@ Add a new entry when a rule changes; mark the old one as superseded instead of d
   benchmark, 3 runs). A full sort is short, obviously correct and easy to change live.
 - **Rejected:** Bounded max-heap, O(n log k): no real gain, because `k` can be as large as `n`. Quickselect,
   O(n) on average: saves at most about 0.1 s, but in-place partitioning is easy to get subtly wrong.
+
+## D9. verifyRun answers yes or no
+
+- **Date:** 2026-10-17
+- **Decision:** `verifyRun(run)` recomputes the picks from the stored eligible ids, percentage and seed and
+  returns `true` only if they equal the stored picks. Stored data that breaks a rule (for example an edited
+  seed) returns `false`. An unknown `algorithmVersion` throws `UnsupportedAlgorithmVersionError`.
+- **Why:** An auditor needs a plain answer. Only an unknown version is a real "cannot judge" case.
+  `verifyRun` does not re-check the quarter window, so a run stays verifiable after it ages out.
+- **Rejected:** Letting validation errors propagate (the auditor would handle errors and `false`).
+- **Note:** `verifyRun` re-applies today's rules (fleet limits, rounding). If any of them change, bump
+  `ALGORITHM_VERSION`, or old runs would stop verifying.
+- **Known limit:** `verifyRun` proves the picks follow from the stored inputs, not that the stored inputs are
+  the originals. Removing a vehicle that was not picked can leave the picks unchanged, so the run still
+  verifies. Detecting edits to a stored run is an integrity concern (append-only audit log, a hash or signature
+  kept elsewhere, no-update database permissions) and belongs to the production design, not this exercise.
+- **Rejected for now:** Storing a digest of the eligible ids inside the run. Anyone who can edit the row can
+  recompute the digest, so it only catches accidental changes.
+
+## D10. Reject an empty tenant id
+
+- **Date:** 2026-10-17
+- **Decision:** `createSelectionRun` rejects an empty or whitespace-only tenant id (`InvalidTenantIdError`).
+- **Why:** `(tenantId, year, quarter)` is the idempotency key; a blank tenant would make it meaningless.
+  Same rule as vehicle ids (D7).
+- **Rejected:** Accepting any string.
