@@ -118,3 +118,46 @@ describe("selectVehicles", () => {
     expect(ALGORITHM_VERSION).toBe("hmac-sha256-lowest-k/v1");
   });
 });
+
+describe("selectVehicles known answer", () => {
+  // Expected picks were computed independently with a node -e script using only node:crypto
+  // (HMAC-SHA256 keyed by the hex seed string, lowest 2 of 8 scores). Fails if the algorithm drifts.
+  it("matches the independently computed picks", () => {
+    const seed: string = "d4391176367bb548d54ee13516efc3f85c99a515b92cd5d854a053904d43c75a";
+    const ids: string[] = [
+      "TRUCK-07",
+      "VAN-12",
+      "TRUCK-01",
+      "BUS-03",
+      "VAN-04",
+      "TRUCK-22",
+      "BUS-15",
+      "VAN-30",
+    ];
+
+    const picks: string[] = select(ids, 25, seed);
+
+    expect(picks).toEqual(["BUS-15", "VAN-30"]);
+  });
+});
+
+describe("selectVehicles fairness", () => {
+  // 10 vehicles at 30% pick 3 per run, so over 2,000 fixed seeds each vehicle expects 600 picks.
+  // Fixed seeds make this deterministic; the 450-750 band only fails if the selection is biased.
+  // Here we consider 7 standard deviations from the mean (600 ± 7*20.4 = 450-750) to be a failure, which is extremely unlikely.
+  it("picks every vehicle about equally often across 2,000 seeds", () => {
+    const ids: string[] = vehicleIds(10);
+    const counts = new Map<string, number>(ids.map((id: string) => [id, 0]));
+
+    for (let i = 0; i < 2000; i++) {
+      for (const id of select(ids, 30, testSeed(`seed-${String(i)}`))) {
+        counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+    }
+
+    for (const count of counts.values()) {
+      expect(count).toBeGreaterThanOrEqual(450);
+      expect(count).toBeLessThanOrEqual(750);
+    }
+  });
+});
