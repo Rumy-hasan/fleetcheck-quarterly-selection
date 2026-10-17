@@ -10,6 +10,12 @@ export class Quarter {
     readonly quarter: number,
   ) {}
 
+  // The quarter that contains `now` (UTC), e.g. for a draw that should happen "this quarter".
+  static current(now: Date): Quarter {
+    const { currentYear, currentQuarter } = currentOf(now);
+    return Quarter.of(currentYear, currentQuarter, now);
+  }
+
   // `now` is passed in because the domain must not read the clock. UTC keeps it timezone-independent.
   static of(year: number, quarter: number, now: Date): Quarter {
     if (!Number.isInteger(year)) {
