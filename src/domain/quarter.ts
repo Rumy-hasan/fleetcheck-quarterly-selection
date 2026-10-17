@@ -1,0 +1,45 @@
+import { InvalidQuarterError } from "./errors.js";
+
+// Selection runs are kept for 20 calendar years, including the current one.
+export const RETENTION_YEARS = 20;
+
+export class Quarter {
+  // Private so every Quarter in the system has passed validation in of().
+  private constructor(
+    readonly year: number,
+    readonly quarter: number,
+  ) {}
+
+  // `now` is passed in because the domain must not read the clock. UTC keeps it timezone-independent.
+  static of(year: number, quarter: number, now: Date): Quarter {
+    if (!Number.isInteger(year)) {
+      throw new InvalidQuarterError(`year must be an integer, got ${String(year)}`);
+    }
+    if (!Number.isInteger(quarter) || quarter < 1 || quarter > 4) {
+      throw new InvalidQuarterError(
+        `quarter must be an integer from 1 to 4, got ${String(quarter)}`,
+      );
+    }
+
+    const currentYear = now.getUTCFullYear();
+    const currentQuarter = Math.floor(now.getUTCMonth() / 3) + 1;
+    const firstYear = Math.max(1, currentYear - RETENTION_YEARS + 1);
+
+    if (year < firstYear) {
+      throw new InvalidQuarterError(
+        `year must be ${String(firstYear)} or later, got ${String(year)}`,
+      );
+    }
+    // One number per quarter makes "is it in the future?" a single comparison.
+    if (year * 4 + quarter > currentYear * 4 + currentQuarter) {
+      throw new InvalidQuarterError(
+        `${label(year, quarter)} is in the future; current quarter is ${label(currentYear, currentQuarter)}`,
+      );
+    }
+    return new Quarter(year, quarter);
+  }
+}
+
+function label(year: number, quarter: number): string {
+  return `${String(year)}-Q${String(quarter)}`;
+}
