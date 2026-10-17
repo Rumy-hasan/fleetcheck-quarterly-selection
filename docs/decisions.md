@@ -136,3 +136,13 @@ Add a new entry when a rule changes; mark the old one as superseded instead of d
 - **Why:** An auditor checking a past quarter must not create the evidence they are checking. Going through
   the draw use case would have created a run whenever none existed.
 - **Rejected:** Auditing through `RunQuarterlySelection` (side effects on a read).
+
+## D14. The scale test asserts a generous time bound
+
+- **Date:** 2026-10-17
+- **Decision:** The 200,000-vehicle test asserts that `selectVehicles` finishes in under 5,000 ms and prints the
+  real elapsed time. This is the only test that reads real time.
+- **Why:** The brief says the selection "works for 20 vehicles and for 200,000"; the bound catches a
+  performance regression (for example an accidental O(n²) step). The logic itself stays deterministic, and
+  the bound is far above the expected time, so a normal CI runner does not flake.
+- **Rejected:** Printing the time without an assertion (nothing would catch a slowdown).

@@ -6,6 +6,8 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
+      // Demo entry point: checked by running `npm run demo`, not by unit tests.
+      exclude: ["src/cli.ts"],
       reporter: ["text", "html"],
     },
   },

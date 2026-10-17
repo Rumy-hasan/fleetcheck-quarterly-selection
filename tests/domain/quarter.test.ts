@@ -72,3 +72,19 @@ describe("Quarter.of", () => {
     expect(error).toBeInstanceOf(DomainError);
   });
 });
+
+describe("Quarter.current", () => {
+  it.each([
+    ["2026-01-01T00:00:00Z", "2026-Q1"],
+    ["2026-03-31T23:59:59.999Z", "2026-Q1"],
+    ["2026-04-01T00:00:00Z", "2026-Q2"],
+    ["2026-12-31T23:59:59.999Z", "2026-Q4"],
+  ])("returns the UTC quarter containing %s", (iso: string, expected: string) => {
+    const now: Date = new Date(iso);
+
+    const current: Quarter = Quarter.current(now);
+
+    expect(current.toString()).toBe(expected);
+    expect(current.isCurrent(now)).toBe(true);
+  });
+});

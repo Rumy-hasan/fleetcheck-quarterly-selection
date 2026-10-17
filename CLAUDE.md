@@ -92,6 +92,7 @@ Dependency rule: `domain` imports nothing from the other folders; `application` 
 - Vitest. Test files mirror `src/`. Every test is explicitly typed (typed helpers, typed fixtures, return types on helpers).
 - Arrange / Act / Assert. Names describe behaviour ("returns the same picks when the input order changes").
 - Deterministic: fixed seeds, injected clock, no `Math.random()`, no real time. A statistical test uses a fixed list of seeds.
+  One exception: the 200,000-vehicle scale test asserts a generous upper bound on elapsed time (docs/decisions.md D14).
 - No snapshot tests. No mocking libraries; use small fakes.
 - Coverage is reported, not gated.
 
